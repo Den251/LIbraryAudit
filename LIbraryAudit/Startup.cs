@@ -28,6 +28,7 @@ namespace LIbraryAudit
             services.AddControllersWithViews();
             services.AddDbContext<LibraryContext>(options => 
             options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+            services.AddTransient<BookRepository>();
             services.AddSession();
 
             //

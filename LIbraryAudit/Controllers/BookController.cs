@@ -13,21 +13,22 @@ namespace LIbraryAudit.Controllers
 {
     public class BookController : Controller
     {
-        private LibraryContext db;
+        BookRepository db;
+        
         public Book bookRecord { get; set; }
         
-        public BookController(LibraryContext db)
+        public BookController(BookRepository db)
         {
             this.db = db;
         }
         public async Task<IActionResult> Index()
         {
 
-            return View(await db.Books.ToListAsync());
+            return View(await db.GetBooks());
         }
         public async Task<IActionResult> ShowAvailable()
         {
-            var avBooks = await db.Books.Where(b => b.Archived != true & b.Reserved != true).ToListAsync();
+            var avBooks = await db.ShowAvailable();
             return RedirectToAction("Index");
         }
         public ActionResult Add(Book book)
@@ -41,23 +42,23 @@ namespace LIbraryAudit.Controllers
         public async Task<IActionResult> Create(Book book)
         {
 
-            db.Books.Add(book);
-            await db.SaveChangesAsync();
+            db.AddBook(book);
+            await Task.Run(() => db.Save());
             return RedirectToAction("Index");
         }
         
         public async Task<IActionResult> Update(int? id)
         {
-            bookRecord = await db.Books.FirstOrDefaultAsync(i => i.Id == id);
+            bookRecord = await db.FindBook(id);
             if (bookRecord == null)
             {
                 return NotFound();
             }
             return View(bookRecord); 
         }
-        public ActionResult Export()
+        public async Task<ActionResult> Export()
         {
-            List<Book> books = db.Books.ToList<Book>();
+            List<Book> books = await db.GetBooks();
             StringBuilder sb = new StringBuilder();
             sb.Append("ID" + ',');
             sb.Append("Title" + ',');
@@ -80,12 +81,9 @@ namespace LIbraryAudit.Controllers
         {
             if (ModelState.IsValid)
             {
-                
-                
-                db.Books.Update(book);
-                
 
-                await db.SaveChangesAsync();
+
+                await Task.Run(() => db.UpdateBook(book));
 
                 
             }
@@ -94,50 +92,48 @@ namespace LIbraryAudit.Controllers
         [HttpPost]
         public async Task<IActionResult> Reserve(int? id)
         {
-            bookRecord = await db.Books.FirstOrDefaultAsync(i => i.Id == id);
+            bookRecord = await db.FindBook(id);
             if (bookRecord.Reserved==false)
                 bookRecord.Reserved = true;
             else
                 bookRecord.Reserved = false;
-            db.Books.Update(bookRecord);
-            await db.SaveChangesAsync();
+            await Task.Run(()=> db.UpdateBook(bookRecord));
             return Json(new { success = true, message = "Reserved successful" });
         }
         
         [HttpPut]
         public async Task<IActionResult> Archive(int? id)
         {
-            bookRecord = await db.Books.FirstOrDefaultAsync(i => i.Id == id);
+            bookRecord = await db.FindBook(id);
             if (bookRecord.Archived == false)
                 bookRecord.Archived = true;
             else
                 bookRecord.Archived = false;
-            db.Books.Update(bookRecord);
-            await db.SaveChangesAsync();
+            
+            await Task.Run(() => db.UpdateBook(bookRecord));
             return Json(new { success = true, message = "Delete successful" });
         }
 
         [HttpDelete]
         public async Task<IActionResult> Delete(int id)
         {
-            var bookFromDb = await db.Books.FirstOrDefaultAsync(u => u.Id == id);
+            var bookFromDb = await db.FindBook(id);
             if (bookFromDb == null)
             {
                 return Json(new { success = false, message = "Error while Deleting" });
             }
-            db.Books.Remove(bookFromDb);
-            await db.SaveChangesAsync();
+            await Task.Run(() => db.DeleteBook(id));
             return Json(new { success = true, message = "Delete successful" });
         }
        
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            return Json(new { data = await db.Books.Where(b => b.Archived != true).ToListAsync() });
+            return Json(new { data = await db.GetBooks() });
         }
         public async Task<IActionResult> GetAllAlphabeticaly()
         {
-            var info = await db.Books.Where(b => b.Archived != true).ToListAsync();
+            var info = await db.GetAllAlphabeticaly();
             
             return Json(new { data = info.OrderByDescending(a => a.Title) });
             
@@ -151,7 +147,7 @@ namespace LIbraryAudit.Controllers
             if (availabilityPushed == false)
             {
                 HttpContext.Session.SetString("availabilityPushed", "true");
-                return Json(new { data = await db.Books.Where(b => b.Archived != true & b.Reserved != true).ToListAsync() });
+                return Json(new { data = await db.GetAllAvailable() });
 
             }
             else
@@ -166,7 +162,7 @@ namespace LIbraryAudit.Controllers
         public async Task<IActionResult> GetAllRes(bool res)
         {
             
-            return Json(new { data = await db.Books.Where(b => b.Reserved == true).ToListAsync() });
+            return Json(new { data = await db.GetAllReserved() });
 
             
         }

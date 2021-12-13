@@ -14,28 +14,70 @@ namespace LIbraryAudit.DAL
         {
             this.context = context;
         }
-        public IEnumerable<Book> GetBooks()
+        public async Task<List<Book>> GetBooks()
         {
-            return context.Books.ToList();
+            return await context.Books.Where(b => b.Archived != true).ToListAsync();
+        }
+        public async Task<List<Book>> ShowAvailable()
+        {
+            
+            return await context.Books.Where(b => b.Archived != true & b.Reserved != true).ToListAsync();
         }
         public void AddBook(Book book)
         {
             context.Books.Add(book);
+            
         }
 
-        public void DeleteBook(int bookId)
+
+
+        public async Task<Book> FindBook(int? id)
         {
-            Book book = context.Books.Find(bookId);
+            return await context.Books.FirstOrDefaultAsync(i => i.Id == id);
+            
+        }
+
+        public async void DeleteBook(int bookId)
+        {
+            Book book = await context.Books.FindAsync(bookId);
             context.Books.Remove(book);
+            await context.SaveChangesAsync();
+            
         }
-        public void UpdateBook(Book book)
+        public async void UpdateBook(Book book)
         {
-            context.Entry(book).State = EntityState.Modified;
+            
+            context.Books.Update(book);
+            await context.SaveChangesAsync();
         }
 
-        public void Save()
+        public async Task<List<Book>> GetAllAlphabeticaly()
         {
-            context.SaveChanges();
+            
+
+            return await context.Books.Where(b => b.Archived != true).ToListAsync();
+
+        }
+        public async Task<List<Book>> GetAllAvailable()
+        {
+
+
+            return await context.Books.Where(b => b.Archived != true & b.Reserved != true).ToListAsync();
+
+        }
+        public async Task<List<Book>> GetAllReserved()
+        {
+
+
+            return await context.Books.Where(b => b.Reserved == true).ToListAsync();
+
+        }
+        
+
+
+        public async void Save()
+        {
+            await context.SaveChangesAsync();
         }
 
         private bool disposed = false;
