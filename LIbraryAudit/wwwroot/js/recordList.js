@@ -90,7 +90,7 @@ function Reserve(id) {
 function Archive(Id) {
     swal({
         title: "Are you sure?",
-        text: "Once deleted, you will not be able to recover",
+        text: "The book will be archived",
         icon: "warning",
         buttons: true,
         dangerMode: true

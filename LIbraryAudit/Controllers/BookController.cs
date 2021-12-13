@@ -20,14 +20,14 @@ namespace LIbraryAudit.Controllers
         {
             this.db = db;
         }
-        public ActionResult Index()
+        public async Task<IActionResult> Index()
         {
 
-            return View(db.Books.ToList());
+            return View(await db.Books.ToListAsync());
         }
-        public IActionResult ShowAvailable()
+        public async Task<IActionResult> ShowAvailable()
         {
-            var avBooks = db.Books.Where(b => b.Archived != true & b.Reserved != true).ToList();
+            var avBooks = await db.Books.Where(b => b.Archived != true & b.Reserved != true).ToListAsync();
             return RedirectToAction("Index");
         }
         public ActionResult Add(Book book)
@@ -38,17 +38,17 @@ namespace LIbraryAudit.Controllers
         }
 
         [HttpPost]
-        public ActionResult Create(Book book)
+        public async Task<IActionResult> Create(Book book)
         {
 
             db.Books.Add(book);
-            db.SaveChanges();
+            await db.SaveChangesAsync();
             return RedirectToAction("Index");
         }
         
-        public ActionResult Update(int? id)
+        public async Task<IActionResult> Update(int? id)
         {
-            bookRecord = db.Books.FirstOrDefault(i => i.Id == id);
+            bookRecord = await db.Books.FirstOrDefaultAsync(i => i.Id == id);
             if (bookRecord == null)
             {
                 return NotFound();
@@ -76,7 +76,7 @@ namespace LIbraryAudit.Controllers
             return File(Encoding.UTF8.GetBytes(sb.ToString()), "text/csv", "Library.csv");
         }
         [HttpPost]
-        public ActionResult Update(Book book)
+        public async Task<IActionResult> Update(Book book)
         {
             if (ModelState.IsValid)
             {
@@ -85,7 +85,7 @@ namespace LIbraryAudit.Controllers
                 db.Books.Update(book);
                 
 
-                db.SaveChanges();
+                await db.SaveChangesAsync();
 
                 
             }
@@ -165,22 +165,10 @@ namespace LIbraryAudit.Controllers
         }
         public async Task<IActionResult> GetAllRes(bool res)
         {
-            bool reservationPushed = Convert.ToBoolean(HttpContext.Session.GetString("reservationPushed"));
+            
+            return Json(new { data = await db.Books.Where(b => b.Reserved == true).ToListAsync() });
 
-            if (reservationPushed == false)
-            {
-                HttpContext.Session.SetString("reservationPushed", "true");
-                return Json(new { data = await db.Books.Where(b => b.Reserved == true).ToListAsync() });
-
-            }
-            else
-            {
-                HttpContext.Session.SetString("reservationPushed", "false");
-                return RedirectToAction("GetAll");
-
-            }
-
-
+            
         }
     }
 }
