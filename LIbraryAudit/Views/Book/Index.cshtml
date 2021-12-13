@@ -1,0 +1,61 @@
+﻿<br />
+<div class="container row p-0 m-0">
+    <div class="col-6">
+        <h2 class="text-info">Guest book</h2>
+    </div>
+    <div class="col-3 offset-3">
+        <a asp-action="Add" asp-controller="Book" class="btn btn-info form-control text-white">
+            Add New Record
+        </a>        
+    </div>
+    
+    <div class="col-12 border p-3">
+        <table id="DT_load" class="table table-striped table-bordered" style="width:100%">
+            <thead>
+                <tr>
+                    <th align="center">TITLE</th>
+                    <th align="center">AUTHOR</th>
+                    <th align="center">RESERVED</th>
+                    <th align="left">ACTIONS</th>
+                </tr>
+            </thead>
+
+        </table>
+        <div class="btn-group" style="width:600px">
+            <div class="col-3 offset-3">
+
+                <a class="btn btn-info form-control text-white" OnClick="getAlphabeticOrder()">
+                    Alphabetic
+                </a>
+
+            </div>
+            <div class="col-3 offset-3">
+
+                <a class="btn btn-info form-control text-white" OnClick="loadDataTable('/book/getallav/')">
+                    Availability
+                </a>
+
+            </div>
+            <div class="col-3 offset-3">
+
+                <a class="btn btn-info form-control text-white" OnClick="loadDataTable('/book/getallres/')">
+                    Reservetion
+                </a>
+
+            </div>
+            <div class="col-3 offset-3">
+
+                <a asp-action="Export" asp-controller="Book" class="btn btn-info form-control text-white">
+                    Export to CSV
+                </a>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+
+@section Scripts{
+    <script src="~/js/recordList.js"></script>
+}
