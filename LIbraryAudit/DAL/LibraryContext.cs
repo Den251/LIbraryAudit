@@ -12,7 +12,7 @@ namespace LIbraryAudit.DAL
         public DbSet<Book> Books { get; set; }
         public LibraryContext(DbContextOptions<LibraryContext> options) : base(options)
         {
-            Database.EnsureCreated();
+            
         }
         
     }
